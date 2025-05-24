@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Cosmic Voyager - Auto Landscape</title>
+    <title>Cosmic Voyager</title>
     <style>
         body { margin: 0; overflow: hidden; background-color: #000; color: #fff; font-family: 'Arial', sans-serif; touch-action: none; }
         
@@ -51,30 +51,17 @@
             width: 50px; height: 50px; background-color: rgba(200, 200, 200, 0.7); border-radius: 50%;
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none;
         }
-
-        /* BARU: CSS untuk pesan orientasi */
         #orientation-blocker {
-            position: fixed; /* Fixed agar menutupi seluruh viewport */
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.95); /* Latar belakang lebih gelap */
-            color: white;
-            display: none; /* Defaultnya sembunyi */
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            z-index: 9999; /* Paling atas */
-            padding: 20px;
-            box-sizing: border-box;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.95); color: white;
+            display: none; flex-direction: column;
+            justify-content: center; align-items: center;
+            text-align: center; z-index: 9999; 
+            padding: 20px; box-sizing: border-box;
         }
-        #orientation-blocker p {
-            font-size: 1.2em;
-            margin-bottom: 20px;
-        }
-        #orientation-blocker svg { /* Icon rotasi sederhana */
-            width: 80px;
-            height: 80px;
-            fill: white;
+        #orientation-blocker p { font-size: 1.2em; margin-bottom: 20px; }
+        #orientation-blocker svg { 
+            width: 80px; height: 80px; fill: white;
             animation: rotateIcon 2s linear infinite;
         }
         @keyframes rotateIcon {
@@ -88,7 +75,6 @@
         <strong>Reykal Hizbullah</strong><br>
         51422420
     </div>
-
     <div id="blocker">
         <div>
             <h1>Cosmic Voyager</h1>
@@ -98,22 +84,18 @@
         <button id="fullscreen-button">Fullscreen</button>
     </div>
     <div id="info">Skor: 0</div>
-
     <div class="touch-controls-container"> 
         <div id="joystick-area">
             <div id="joystick-base"></div>
             <div id="joystick-knob"></div>
         </div>
     </div>
-
-    <!-- BARU: Elemen untuk pesan orientasi -->
     <div id="orientation-blocker">
         <svg viewBox="0 0 24 24">
             <path d="M17.65,6.35C16.2,4.9 14.21,4 12,4c-4.42,0-7.99,3.58-7.99,8s3.57,8,7.99,8c3.73,0,6.84-2.55,7.73-6h-2.08c-.82,2.33-3.04,4-5.65,4-3.31,0-6-2.69-6-6s2.69-6,6-6c1.66,0,3.14,.69,4.22,1.78L13,11h7V4l-2.35,2.35z"/>
         </svg>
         <p>Putar perangkat Anda ke mode Lanskap untuk pengalaman terbaik.</p>
     </div>
-
 
     <script type="importmap">
     { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
@@ -149,15 +131,12 @@
         const touchControlsUI = document.querySelector('.touch-controls-container');
         const joystickArea = document.getElementById('joystick-area');
         const joystickKnob = document.getElementById('joystick-knob');
-        
-        // BARU: Referensi ke orientation blocker
         const orientationBlockerUI = document.getElementById('orientation-blocker');
-
 
         let joystickActive = false, joystickTouchId = null, joystickCenterX, joystickCenterY;
         let lookActive = false, lookTouchId = null, lastLookX, lastLookY;
         let gameStarted = false, onMobile;
-        let isLandscape = false; // BARU: Status orientasi
+        let isLandscape = false; 
 
         init();
         animate();
@@ -168,43 +147,27 @@
             return check || (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1);
         }
         
-        // BARU: Fungsi untuk cek orientasi dan menampilkan pesan
         function checkOrientationAndNotify() {
-            if (!onMobile) { // Hanya berlaku untuk mobile
-                isLandscape = true; // Anggap desktop selalu landscape untuk game
+            if (!onMobile) { 
+                isLandscape = true; 
                 orientationBlockerUI.style.display = 'none';
                 return true;
             }
-
-            // Cara sederhana cek lanskap: window.innerWidth > window.innerHeight
-            // Untuk lebih akurat, bisa pakai screen.orientation API jika tersedia
             if (window.matchMedia("(orientation: landscape)").matches) {
                 isLandscape = true;
                 orientationBlockerUI.style.display = 'none';
-                 // Jika blocker utama masih tampil, biarkan. Jika tidak, pastikan game bisa jalan.
-                if (blocker.style.display === 'none' && !gameStarted) {
-                    // Ini untuk kasus jika user memutar setelah blocker awal hilang tapi game belum start
-                    // Tidak terlalu relevan dengan alur saat ini, tapi jaga-jaga
-                }
             } else {
                 isLandscape = false;
                 orientationBlockerUI.style.display = 'flex';
-                if (gameStarted) { // Jika game sudah jalan dan diputar ke potret, jeda game.
-                    // Anda bisa menambahkan logika jeda di sini jika diperlukan
-                    console.log("Game paused due to portrait mode.");
-                }
             }
             return isLandscape;
         }
 
-
         function init() { 
             onMobile = isMobileDevice();
-            
-            // BARU: Cek orientasi di awal
             checkOrientationAndNotify(); 
             window.addEventListener('orientationchange', checkOrientationAndNotify);
-            window.addEventListener('resize', checkOrientationAndNotify); // resize juga bisa trigger perubahan W/H
+            window.addEventListener('resize', checkOrientationAndNotify); 
 
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x000011);
@@ -236,7 +199,7 @@
                 touchControlsUI.style.display = 'flex'; 
                 currentLookSensitivity = mobileLookSensitivity;
                 blockerInstructionText.textContent = "TAP untuk memulai!";
-                blockerSubInstructionText.textContent = "(Pastikan layar lanskap)"; // Instruksi disesuaikan
+                blockerSubInstructionText.textContent = "(Pastikan layar lanskap)"; 
                 setupTouchControls(); 
                 fullscreenButton.style.display = 'block';
                 document.body.style.cursor = 'default';
@@ -251,14 +214,13 @@
             }
 
             blocker.addEventListener('click', handleClickToStart);
-            fullscreenButton.addEventListener('click', toggleFullScreen); // Fungsi fullscreen tetap ada
+            fullscreenButton.addEventListener('click', toggleFullScreen); 
             createStarfield();
             createPlanets();
             for (let i = 0; i < numInitialOrbs; i++) spawnOrb();
-            window.addEventListener('resize', onWindowResize); // onWindowResize juga akan panggil checkOrientation
-            onWindowResize(); // Panggil sekali untuk setup awal
+            window.addEventListener('resize', onWindowResize); 
+            onWindowResize(); 
         }
-
 
         function createPlayerShip() { /* ... (fungsi createPlayerShip sama seperti checkpoint sebelumnya) ... */ 
             playerShip = new THREE.Group();
@@ -288,19 +250,13 @@
 
         function handleClickToStart() { 
             if (gameStarted) return;
-
-            // BARU: Cek orientasi sebelum memulai game di mobile
             if (onMobile && !checkOrientationAndNotify()) {
-                // Jika masih potret, jangan mulai game, pesan sudah ditampilkan
                 return; 
             }
-            
-            // Coba request fullscreen saat game dimulai, terutama di mobile
-            if (onMobile || !document.pointerLockElement) { // Kondisi untuk desktop juga
-                toggleFullScreenWithOrientation(); // Fungsi baru
+            // HANYA request fullscreen di mobile saat klik mulai
+            if (onMobile) { 
+                toggleFullScreenWithOrientation(); 
             }
-
-
             if (onMobile) {
                 startGameSequence();
             } else { 
@@ -315,53 +271,45 @@
 
         function startGameSequence() { 
             if (gameStarted) return;
-            if (onMobile && !isLandscape) { // Tambahan cek jika ada race condition
-                 orientationBlockerUI.style.display = 'flex'; // Pastikan pesan tampil jika belum lanskap
+            if (onMobile && !isLandscape) { 
+                 orientationBlockerUI.style.display = 'flex'; 
                  return;
             }
             gameStarted = true;
             blocker.style.display = 'none';
-            orientationBlockerUI.style.display = 'none'; // Sembunyikan pesan orientasi jika game mulai
+            orientationBlockerUI.style.display = 'none'; 
         }
 
-        // BARU: Fungsi untuk mencoba fullscreen dengan orientasi
         async function toggleFullScreenWithOrientation() {
             const element = document.documentElement;
             if (!document.fullscreenElement) {
-                try {
-                    if (onMobile && element.requestFullscreen) {
-                        // Coba request fullscreen dengan preferensi orientasi lanskap
-                        // API screen.orientation.lock() lebih modern tapi mungkin tidak semua browser
+                // Hanya request fullscreen jika di mobile. Tombol fullscreen juga hanya tampil di mobile.
+                if (onMobile && element.requestFullscreen) { 
+                    try {
                         if (screen.orientation && typeof screen.orientation.lock === 'function') {
-                            await element.requestFullscreen({ navigationUI: "hide" }); // Fullscreen dulu
+                            await element.requestFullscreen({ navigationUI: "hide" });
                             await screen.orientation.lock('landscape').catch(err => console.warn("Gagal mengunci orientasi:", err));
                         } else {
-                            // Fallback untuk browser lama, requestFullscreen biasa
                             await element.requestFullscreen({ navigationUI: "hide" }).catch(err => console.warn("Fullscreen gagal:", err));
                         }
-                    } else if (element.requestFullscreen) { // Desktop atau mobile tanpa preferensi orientasi
-                         await element.requestFullscreen().catch(err => console.warn("Fullscreen gagal:", err));
+                    } catch (err) {
+                        console.warn("Error saat request fullscreen atau lock orientasi:", err);
                     }
-                } catch (err) {
-                    console.warn("Error saat request fullscreen atau lock orientasi:", err);
                 }
-            } else {
+                // Tidak ada else if untuk desktop di sini, jadi desktop tidak akan otomatis fullscreen
+            } else { 
                 if (document.exitFullscreen) {
                     await document.exitFullscreen().catch(err => console.warn("Exit fullscreen gagal:", err));
-                    // Unlock orientasi jika sebelumnya di-lock
                     if (screen.orientation && typeof screen.orientation.unlock === 'function') {
                         screen.orientation.unlock();
                     }
                 }
             }
         }
-        // Ganti toggleFullScreen lama dengan yang ini agar bisa dipanggil dari tombol
         function toggleFullScreen() {
             toggleFullScreenWithOrientation();
         }
 
-
-        // --- Desktop Controls ---
         function setupDesktopControls() { /* ... (fungsi sama) ... */ 
             document.addEventListener('pointerlockchange', handlePointerLockChange, false);
             document.addEventListener('mozpointerlockchange', handlePointerLockChange, false); 
@@ -403,7 +351,6 @@
             }
         }
 
-        // --- Touch Controls ---
         function setupTouchControls() { /* ... (fungsi sama) ... */ 
             const joystickRect = joystickArea.getBoundingClientRect();
             joystickCenterX = joystickRect.left + joystickRect.width / 2;
@@ -417,12 +364,12 @@
             document.addEventListener('touchend', handleLookEnd, { passive: false });
             document.addEventListener('touchcancel', handleLookEnd, { passive: false });
         }
-        function handleJoystickStart(event) { /* ... (fungsi sama) ... */ 
-            event.preventDefault(); if (!gameStarted || joystickActive || !isLandscape && onMobile) return; // Jangan aktif jika potret
+        function handleJoystickStart(event) { /* ... (fungsi sama, dengan cek isLandscape) ... */ 
+            event.preventDefault(); if (!gameStarted || joystickActive || !isLandscape && onMobile) return;
             const touch = event.changedTouches[0]; joystickTouchId = touch.identifier; joystickActive = true;
             updateJoystickKnob(touch.clientX, touch.clientY);
         }
-        function handleJoystickMove(event) { /* ... (fungsi sama) ... */ 
+        function handleJoystickMove(event) { /* ... (fungsi sama, dengan cek isLandscape) ... */ 
             event.preventDefault(); if (!gameStarted || !joystickActive || !isLandscape && onMobile) return;
             for (let i=0; i<event.changedTouches.length; i++) {
                 const touch = event.changedTouches[i];
@@ -430,7 +377,7 @@
             }
         }
         function handleJoystickEnd(event) { /* ... (fungsi sama) ... */ 
-            event.preventDefault(); if (!joystickActive) return; // Tidak perlu cek isLandscape di sini, karena jika active pasti sudah landscape
+            event.preventDefault(); if (!joystickActive) return;
             for (let i=0; i<event.changedTouches.length; i++) {
                 const touch = event.changedTouches[i];
                 if (touch.identifier === joystickTouchId) {
@@ -462,8 +409,8 @@
         function resetJoystickKnob() { /* ... (fungsi sama) ... */ 
             joystickKnob.style.transform = 'translate(-50%, -50%)';
         }
-        function handleLookStart(event) { 
-            if (!gameStarted || lookActive || !isLandscape && onMobile) return; // Jangan aktif jika potret
+        function handleLookStart(event) { /* ... (fungsi sama, dengan cek isLandscape) ... */ 
+            if (!gameStarted || lookActive || !isLandscape && onMobile) return;
             const touch = event.changedTouches[0];
             if (touch.clientX > window.innerWidth / 2.5 && 
                 event.target !== joystickArea && !joystickArea.contains(event.target) 
@@ -472,7 +419,7 @@
                 lastLookX = touch.clientX; lastLookY = touch.clientY;
             }
         }
-        function handleLookMove(event) { 
+        function handleLookMove(event) { /* ... (fungsi sama, dengan cek isLandscape) ... */ 
             if (!gameStarted || !lookActive || !isLandscape && onMobile) return;
             for (let i=0; i<event.changedTouches.length; i++) {
                 const touch = event.changedTouches[i];
@@ -485,15 +432,14 @@
                 }
             }
         }
-        function handleLookEnd(event) { 
-            if (!lookActive) return; // Tidak perlu cek isLandscape di sini
+        function handleLookEnd(event) { /* ... (fungsi sama) ... */ 
+            if (!lookActive) return;
             for (let i=0; i<event.changedTouches.length; i++) {
                 const touch = event.changedTouches[i];
                 if (touch.identifier === lookTouchId) { event.preventDefault(); lookActive = false; lookTouchId = null; break; }
             }
         }
 
-        // --- Common Game Logic ---
         function onWindowResize() { 
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
@@ -502,7 +448,7 @@
                 const joystickRect = joystickArea.getBoundingClientRect();
                 joystickCenterX = joystickRect.left + joystickRect.width / 2;
                 joystickCenterY = joystickRect.top + joystickRect.height / 2;
-                checkOrientationAndNotify(); // Cek orientasi juga saat resize
+                checkOrientationAndNotify(); 
             }
         }
         function createStarfield() { /* ... (fungsi sama) ... */ 
@@ -535,9 +481,7 @@
         }
 
         function updateShipAndCamera(deltaTime) { 
-            // BARU: Jangan update jika game dijeda atau bukan lanskap di mobile
             if (!playerShip || !gameStarted || (onMobile && !isLandscape)) return;
-
             const qYaw = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0), shipYaw);
             const qPitch = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0), shipPitch);
             playerShip.quaternion.copy(qYaw.multiply(qPitch)); 
@@ -554,9 +498,7 @@
             camera.lookAt(lookAtTgt);
         }
         function checkCollisions() { 
-            // BARU: Jangan cek jika game dijeda atau bukan lanskap di mobile
             if (!playerShip || !gameStarted || (onMobile && !isLandscape)) return;
-
             for (let i=orbs.length-1; i>=0; i--) {
                 const orb = orbs[i];
                 if (playerShip.position.distanceTo( orb.position ) < playerRadius + orbRadius) {
@@ -566,10 +508,6 @@
             }
         }
         function updateOrbs(deltaTime) { 
-            // BARU: Biarkan orb beranimasi, tapi jika game dijeda karena orientasi,
-            // mungkin lebih baik tidak mengupdate posisi pemain/kolisi.
-            // Namun, animasi orb bisa tetap jalan.
-
             const time = clock.getElapsedTime();
             orbs.forEach(o => {
                 o.position.y = o.userData.initialY + Math.sin(time*o.userData.bobSpeed)*o.userData.bobAmplitude;
@@ -579,16 +517,11 @@
         function animate() { 
             requestAnimationFrame(animate);
             const deltaTime = clock.getDelta();
-
-            // Hanya update logika game utama jika gameStarted DAN (bukan mobile ATAU sudah landscape)
             if (gameStarted && (!onMobile || isLandscape)) {
                  updateShipAndCamera(deltaTime); 
                  checkCollisions(); 
             }
-            updateOrbs(deltaTime); // Orb tetap beranimasi
-            
-            // Render selalu dilakukan, bahkan jika ada pesan orientasi
-            // agar setidaknya background terlihat jika ada
+            updateOrbs(deltaTime); 
             renderer.render(scene, camera);
         }
     </script>
