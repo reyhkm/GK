@@ -480,38 +480,36 @@
             scene.add(orb); orbs.push(orb);
         }
 // Di dalam updateShipAndCamera:
+// Di dalam updateShipAndCamera:
 function updateShipAndCamera(deltaTime) {
     if (!playerShip || !gameStarted) return;
     const qYaw = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0), shipYaw);
     const qPitch = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0), shipPitch);
-    playerShip.quaternion.copy(qYaw.multiply(qPitch));
+    playerShip.quaternion.copy(qYaw.multiply(qPitch)); // Ini mengontrol orientasi hadap kapal
 
     const actualSpeed = playerSpeed * deltaTime;
 
-    // PERUBAHAN DI SINI JIKA KOKPIT (Z+) ADALAH DEPAN
-    if (moveForward) playerShip.translateZ(actualSpeed);  // Maju ke arah kokpit (Z+)
-    if (moveBackward) playerShip.translateZ(-actualSpeed); // Mundur ke arah engine (Z-)
+    // Maju/Mundur (Sudah diperbaiki sebelumnya, dengan asumsi depan = Z+)
+    if (moveForward) playerShip.translateZ(actualSpeed);
+    if (moveBackward) playerShip.translateZ(-actualSpeed); 
     
-    if (moveLeft) playerShip.translateX(-actualSpeed);   // Tetap
-    if (moveRight) playerShip.translateX(actualSpeed);  // Tetap
+    // Strafe Kiri/Kanan (BARU DIPERBAIKI)
+    if (moveLeft) playerShip.translateX(actualSpeed);   // A ditekan, jika terasa ke kanan, balik jadi +
+    if (moveRight) playerShip.translateX(-actualSpeed);  // D ditekan, jika terasa ke kiri, balik jadi -
     
+    // Naik/Turun (Seharusnya tetap karena ini absolut terhadap sumbu Y dunia)
     if (moveUp) playerShip.position.y += actualSpeed;
     if (moveDown) playerShip.position.y -= actualSpeed;
 
-    // ... sisa fungsi sama ...
     const limit = worldSize*1.6;
     playerShip.position.clamp(new THREE.Vector3(-limit,-limit/1.5,-limit), new THREE.Vector3(limit,limit,limit));
     
-    // Offset kamera TPP harus konsisten. Jika depan kapal itu Z+, maka kamera di belakangnya itu di Z-
-    // Jika camOffset.z adalah nilai negatif, itu sudah benar (di belakang arah Z+ kapal).
-    const camOffset = new THREE.Vector3(0, (onMobile?1.8:2.4), (onMobile?-7.5:-9.5)); // Z negatif berarti di belakang sumbu Z+ kapal, ini benar
-    
+    const camOffset = new THREE.Vector3(0, (onMobile?1.8:2.4), (onMobile?-7.5:-9.5));
     const worldCamOffset = camOffset.clone().applyQuaternion(playerShip.quaternion);
     const camTargetPos = new THREE.Vector3().copy(playerShip.position).add(worldCamOffset);
     camera.position.lerp(camTargetPos, onMobile ? 0.12 : 0.1);
     
-    // Target lookAt juga harus konsisten. Jika depan kapal Z+, maka lookAt di depannya juga Z+
-    const lookAtTgt = new THREE.Vector3(0,0.5,5).applyQuaternion(playerShip.quaternion).add(playerShip.position); // Z positif 5 unit di depan origin kapal, ini benar.
+    const lookAtTgt = new THREE.Vector3(0,0.5,5).applyQuaternion(playerShip.quaternion).add(playerShip.position);
     camera.lookAt(lookAtTgt);
 }
         function checkCollisions() {
