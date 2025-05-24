@@ -317,28 +317,37 @@
             }
         }
         function updateJoystickKnob(clientX, clientY) {
-            // Logika untuk menentukan moveForward dan moveBackward dari joystick Y-axis saja
-            // X-axis joystick diabaikan untuk gerakan
             const rect = joystickArea.getBoundingClientRect();
             const currentJoystickCenterX = rect.left + rect.width / 2;
             const currentJoystickCenterY = rect.top + rect.height / 2;
-            let dx = clientX - currentJoystickCenterX; // dx tetap dihitung untuk posisi knob
+            let dx = clientX - currentJoystickCenterX;
             let dy = clientY - currentJoystickCenterY;
             const distance = Math.sqrt(dx*dx + dy*dy);
             const currentJoystickMaxDist = (rect.width / 2) - (joystickKnob.offsetWidth / 2);
 
             if (distance > currentJoystickMaxDist) {
-                dx = (dx/distance)*currentJoystickMaxDist;
+                dx = (dx/distance)*currentJoystickMaxDist; // dx tetap dihitung untuk posisi visual knob
                 dy = (dy/distance)*currentJoystickMaxDist;
             }
             joystickKnob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
 
-            const deadZoneY = currentJoystickMaxDist * 0.15; // Deadzone untuk sumbu Y
-            const normalizedY = Math.abs(dy) < deadZoneY ? 0 : dy / currentJoystickMaxDist;
+            // Fokus hanya pada komponen Y untuk maju/mundur
+            const deadZoneY = currentJoystickMaxDist * 0.20; // Naikkan deadzone sedikit untuk Y
             
-            moveForward = normalizedY < -0.2; // Maju jika knob ditarik ke atas
-            moveBackward = normalizedY > 0.2; // Mundur jika knob ditarik ke bawah
-            // moveLeft dan moveRight tidak lagi diatur oleh joystick
+            // Hanya gunakan dy untuk menentukan maju/mundur
+            const normalizedY = Math.abs(dy) < deadZoneY ? 0 : dy / currentJoystickMaxDist; 
+            // ^ Kita bisa juga hanya menggunakan dy tanpa normalisasi jika hanya butuh arah
+            //   dan tidak butuh 'kekuatan' joystick, tapi normalizedY lebih konsisten.
+
+            moveForward = false;
+            moveBackward = false;
+
+            if (normalizedY < -0.2) { // Ambang batas untuk maju (knob ditarik ke atas)
+                moveForward = true;
+            } else if (normalizedY > 0.2) { // Ambang batas untuk mundur (knob ditarik ke bawah)
+                moveBackward = true;
+            }
+            // Gerakan horizontal (dx atau normalizedX) dari joystick diabaikan untuk logika moveLeft/moveRight
         }
         function resetJoystickKnob() { /* ... (fungsi sama) ... */ 
             joystickKnob.style.transform = 'translate(-50%, -50%)';
